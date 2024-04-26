@@ -18,7 +18,7 @@ exports.createUser = async (req, res) => {
     };
     // const newUser = await User.create(payload);
     const db = await client.connect();
-    const found = await db.collection('users').findOne({name: payload.name});
+    const found = await db.collection('users').findOne({displayName: payload.displayName});
     if (found) {
       payload._id = found._id;
       db.collection('users').updateOne({_id: found._id}, {$set: payload}, {upsert: false})
