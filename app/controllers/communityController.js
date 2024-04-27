@@ -78,16 +78,31 @@ const getPosts = async (req, res) => {
 
 const vote = async (req, res) => {
   const db = await client.connect();
+  let keyR = '$addToSet';
   const { post, vote, userId } = req.body;
+  if (req.body.remove) {
+    keyR = '$pull'
+  }
   const key = vote > 0 ? "upVote" : "downVote";
   const remove = vote > 0 ? "downVote" : "upVote";
+
   try {
-    await db
-      .collection("posts")
-      .updateOne(
-        { _id: new ObjectId(post._id) },
-        { $addToSet: { [key]: userId }, $pull: { [remove]: userId } }
-      );
+    if (req.body.remove) {
+      await db
+        .collection("posts")
+        .updateOne(
+          { _id: new ObjectId(post._id) },
+          { $pull: { [key]: userId } }
+        );
+
+    } else {
+      await db
+        .collection("posts")
+        .updateOne(
+          { _id: new ObjectId(post._id) },
+          { $addToSet: { [key]: userId }, $pull: { [remove]: userId } }
+        );
+    }
       const resp = await db.collection('posts').findOne({_id: new ObjectId(post._id)})
     res.json({ message: "updated", post: resp });
   } catch (error) {
